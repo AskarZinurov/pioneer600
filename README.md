@@ -37,6 +37,13 @@ p.beep_off
 
 p.led2_on
 p.led2_off
+
+# Pin - GPIO pins manipulation
+pin = Pioneer600::Pin.new(26) # led1
+pin.direction!(:out)
+pin.write 1
+pin.read
+pin.close
 ```
 
 ## Development

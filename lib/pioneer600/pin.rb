@@ -25,7 +25,7 @@ module Pioneer600
       IO.read(value_path).to_i
     end
 
-    def set_direction!(new_direction = nil)
+    def direction!(new_direction = nil)
       @direction = new_direction if new_direction
       IO.write(File.join(path, 'direction'), direction.to_s)
       direction
