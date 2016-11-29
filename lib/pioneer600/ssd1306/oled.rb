@@ -35,7 +35,7 @@ module Pioneer600::Ssd1306
     VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29
     VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A
 
-    attr_reader :rst, :dc, :spi
+    attr_reader :rst, :dc, :spi, :buffer
 
     def initialize(rst, dc, spi)
       @width = 128
@@ -120,7 +120,7 @@ module Pioneer600::Ssd1306
     def write(font, text)
       @buffer = []
       text.split(//).each do |ch|
-        @buffer << font[ch]
+        @buffer += font[ch]
       end
     end
 
