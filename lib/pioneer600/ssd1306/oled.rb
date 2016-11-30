@@ -34,33 +34,43 @@ module Pioneer600::Ssd1306
     LEFT_HORIZONTAL_SCROLL = 0x27
     VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29
     VERTICAL_AND_LEFT_HORIZONTAL_SCROLL = 0x2A
+    AREA = Area.new(Point.new(0, 0), Point.new(127, 63))
 
-    attr_reader :rst, :dc, :spi, :buffer
+    RST = 19
+    DC = 16
 
-    def initialize(rst, dc, spi)
-      @width = 128
-      @height = 64
-      @pages = 8
-      @buffer = [0] * (@width * @pages)
-      @dc = dc
-      @rst = rst
+    attr_reader :spi
+
+    def initialize(spi)
       @spi = spi
 
       #GPIO.setmode(GPIO.BCM)
       #GPIO.setwarnings(False)
-      Bcm2835::GPIO.output(dc)
-      Bcm2835::GPIO.output(rst)
+      Bcm2835::GPIO.output(DC)
+      Bcm2835::GPIO.output(RST)
+    end
+
+    def width
+      AREA.columns
+    end
+
+    def height
+      AREA.rows
+    end
+
+    def pages
+      AREA.pages
     end
 
     # Send command byte to display
     def command(cmd)
-  		Bcm2835::GPIO.write(dc, false)
+  		Bcm2835::GPIO.write(DC, false)
   		spi.write(cmd)
     end
 
     # Send byte of data to display
     def data(val)
-  		Bcm2835::GPIO.write(dc, true)
+  		Bcm2835::GPIO.write(DC, true)
   		spi.write(val)
     end
 
@@ -97,62 +107,26 @@ module Pioneer600::Ssd1306
 
     # Reset the display
     def reset
-      Bcm2835::GPIO.write(rst, true)
+      Bcm2835::GPIO.write(RST, true)
       sleep 0.001
-      Bcm2835::GPIO.write(rst, false)
+      Bcm2835::GPIO.write(RST, false)
       sleep 0.010
-      Bcm2835::GPIO.write(rst, true)
+      Bcm2835::GPIO.write(RST, true)
     end
 
-    # Write display buffer to physical display
-    def display(column: 0, page: 0)
+    def display(area)
       command(COLUMNADDR)
-      command(column)                  #Cloumn start address
-      command(@width - 1)         #Cloumn end address
+      command(area.top_left_point.x)            #Column start address
+      command(area.down_right_corner.x)         #Column end address
       command(PAGEADDR)
-      command(page)                  #Page start address
-      command(@pages - 1)         #Page end address
+      command(area.page)                        #Page start address
+      command(area.pages - 1)                   #Page end address
       #Write buffer data
-      Bcm2835::GPIO.write(dc, true)
-      spi.write(@buffer)
-    end
-
-    def write(font, text)
-      @buffer = []
-      text.split(//).each do |ch|
-        @buffer += font[ch]
-      end
-    end
-
-    def image(image)
-  		raise ArgumentError.new('Image must be a chunky image.') unless image.is_a?(ChunkyPNG::Image)
-
-      if image.width != @width || image.height != @height
-        raise ArgumentError.new('Image must be same dimensions as display (%d x %d).' % [@width, @height])
-      end
-
-      @buffer = []
-      for page in (0...@pages) do
-        # Iterate through all x axis columns.
-        for x in (0...@width) do
-          bits = 0
-          8.times do |bit|
-            bits = bits << 1
-            bits |= (image[x, page * 8 + 7 - bit] == ChunkyPNG::Color::BLACK ? 0 : 1)
-          end
-          @buffer << bits
-        end
-      end
-    end
-
-    # Clear contents of image buffer
-    def clear
-      @buffer = [0] * (@width * @pages)
+      data(area.bytes)
     end
 
     def clear!
-      clear
-      display
+      display AREA
     end
 
     # Sets the contrast of the display.
@@ -161,21 +135,6 @@ module Pioneer600::Ssd1306
       raise ArgumentError('Contrast must be a value from 0 to 255.') if contrast < 0 || contrast > 255
       command(SETCONTRAST)
       command(contrast)
-    end
-
-    # Adjusts contrast to dim the display if dim is True,
-    # otherwise sets the contrast to normal brightness if dim is False.
-    def dim(dim)
-      # Assume dim display.
-      contrast = 0
-      # Adjust contrast based on VCC if not dimming.
-      if !dim
-        if @vccstate == EXTERNALVCC
-          contrast = 0x9F
-        else
-          contrast = 0xCF
-        end
-      end
     end
   end
 end
