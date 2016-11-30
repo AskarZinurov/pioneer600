@@ -23,12 +23,12 @@ class Dht11
     pull_up_lengths = parse_data_pull_up_lengths(data)
 
     # if bit count mismatch, return error (4 byte data + 1 byte checksum)
-    return "Bit count mismatch" if pull_up_lengths.length != 40
+    return nil if pull_up_lengths.length != 40
 
     # we have the bits, calculate bytes
     the_bytes = bits_to_bytes(calculate_bits(pull_up_lengths))
 
-    return "Checksum mismatch" if the_bytes[4] != calculate_checksum(the_bytes)
+    return nil if the_bytes[4] != calculate_checksum(the_bytes)
 
     Result.new(bytes_to_f(the_bytes[2], the_bytes[3]), bytes_to_f(the_bytes[0], the_bytes[1]))
   end
