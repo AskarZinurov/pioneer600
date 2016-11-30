@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency 'i2c'
-  #spec.add_runtime_dependency 'bcm2835'
+  spec.add_runtime_dependency 'bcm2835'
   spec.add_runtime_dependency 'chunky_png'
 
   spec.add_development_dependency "bundler", "~> 1.12"
