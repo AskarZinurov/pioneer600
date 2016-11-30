@@ -22,7 +22,7 @@ module Pioneer600::Ssd1306
     end
 
     def page
-      top_left_corner.y / PAGE_SIZE
+      top_left_point.y / PAGE_SIZE
     end
 
     def pages
@@ -64,7 +64,7 @@ module Pioneer600::Ssd1306
 
     class << self
       def from_image(image, a = Point.new(0, 0))
-        b = Point.new(image.width, image.height)
+        b = Point.new(image.width - 1, image.height - 1)
         new(a, b).fill_with_image(image)
       end
     end

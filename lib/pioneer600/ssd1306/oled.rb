@@ -109,7 +109,7 @@ module Pioneer600::Ssd1306
 
       command(COLUMNADDR)
       command(area.top_left_point.x)            #Column start address
-      command(area.down_right_corner.x)         #Column end address
+      command(area.down_right_point.x)         #Column end address
       command(PAGEADDR)
       command(area.page)                        #Page start address
       command(area.pages - 1)                   #Page end address
