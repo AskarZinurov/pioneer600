@@ -50,18 +50,6 @@ module Pioneer600::Ssd1306
       Bcm2835::GPIO.output(RST)
     end
 
-    def width
-      AREA.columns
-    end
-
-    def height
-      AREA.rows
-    end
-
-    def pages
-      AREA.pages
-    end
-
     # Send command byte to display
     def command(cmd)
   		Bcm2835::GPIO.write(DC, false)
@@ -115,12 +103,17 @@ module Pioneer600::Ssd1306
     end
 
     def display(area)
+      if area.down_right_point.outside?(AREA)
+        raise ArgumentError.new("Drawing area outside of display coordinates!")
+      end
+
       command(COLUMNADDR)
       command(area.top_left_point.x)            #Column start address
       command(area.down_right_corner.x)         #Column end address
       command(PAGEADDR)
       command(area.page)                        #Page start address
       command(area.pages - 1)                   #Page end address
+
       #Write buffer data
       data(area.bytes)
     end

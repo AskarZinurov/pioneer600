@@ -26,7 +26,7 @@ module Pioneer600::Ssd1306
     end
 
     def pages
-      rows / PAGE_SIZE
+      (rows / PAGE_SIZE.to_i).ceil
     end
 
     def buffer

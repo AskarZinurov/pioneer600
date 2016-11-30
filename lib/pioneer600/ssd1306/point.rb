@@ -6,5 +6,10 @@ module Pioneer600::Ssd1306
       @x = x
       @y = y
     end
+
+    def outside?(area)
+      x > area.down_right_point.x ||
+        y > area.down_right_point.y
+    end
   end
 end
